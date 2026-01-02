@@ -23,7 +23,6 @@ import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
-import InputAdornment from '@mui/material/InputAdornment';
 
 // import Divider from '@mui/material/Divider'
 import Accordion from '@mui/material/Accordion';
@@ -80,106 +79,207 @@ const WelcomeForm = ({ guildId, initialSettings, channels, roles }: Props) => {
 		}
 	};
 
-	// --- SUB-COMPONENT: Advanced Canvas Settings (Biar gak duplikat kode In/Out) ---
+	const [previewImage, setPreviewImage] = useState<string | null>(null);
+	const [previewModalOpen, setPreviewModalOpen] = useState(false);
+
+	// Handle Preview (Stub for Kythia Arts)
+	const handlePreview = async (type: 'In' | 'Out') => {
+		setLoading(true);
+		try {
+			// Gabungin formData dengan type yang mau di-preview
+			const payload = {
+				...formData,
+				type: type,
+			};
+
+			const res = await fetch('/api/proxy/canvas/preview', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify(payload),
+			});
+
+			const data = await res.json();
+
+			if (data.success && data.image) {
+				setPreviewImage(data.image);
+				setPreviewModalOpen(true); // Buka modal khusus buat liat gambar
+				setToast({
+					open: true,
+					message: 'Preview generated!',
+					severity: 'success',
+				});
+			} else {
+				throw new Error(data.message || 'Failed');
+			}
+		} catch (error: any) {
+			setToast({
+				open: true,
+				message: error.message || 'Failed to generate preview',
+				severity: 'error',
+			});
+		} finally {
+			setLoading(false);
+		}
+	};
+
+	// --- SUB-COMPONENT: Advanced Canvas Settings (UPDATED: No Defaults) ---
 	const renderAdvancedSettings = (type: 'In' | 'Out') => {
 		const prefix = `welcome${type}`; // welcomeIn atau welcomeOut
+
+		// Helper kecil biar onChange gak ribet nulis berkali-kali
+		// Kalau kosong -> set undefined biar backend pake default library
+		const handleNumChange = (key: string, val: string) => {
+			updateState(key, val === '' ? undefined : parseInt(val));
+		};
 
 		return (
 			<Accordion>
 				<AccordionSummary expandIcon={<i className="tabler-chevron-down" />}>
-					<Typography
-						variant="h6"
-						className="font-bold flex items-center gap-2"
-					>
-						<i className="tabler-palette" /> Advanced {type} Canvas Settings
-					</Typography>
+					<div className="flex items-center justify-between w-full mr-4">
+						<Typography
+							variant="h6"
+							className="font-bold flex items-center gap-2"
+						>
+							<i className="tabler-palette" /> Advanced {type} Canvas Settings
+						</Typography>
+						<Button
+							size="small"
+							variant="contained"
+							color="secondary"
+							onClick={(e) => {
+								e.stopPropagation();
+								handlePreview(type);
+							}}
+							startIcon={<i className="tabler-photo" />}
+						>
+							Preview
+						</Button>
+					</div>
 				</AccordionSummary>
 				<AccordionDetails>
 					<Grid container spacing={4}>
-						{/* Banner Size */}
+						{/* 1. Dimensions & Overlay */}
 						<Grid item xs={12} md={6}>
 							<Typography
 								variant="subtitle2"
 								className="mb-2 text-primary uppercase text-xs font-bold"
 							>
-								Banner Dimension
+								Base & Overlay
 							</Typography>
-							<div className="flex gap-4">
+							<div className="flex gap-4 mb-3">
 								<TextField
 									label="Width"
 									type="number"
 									size="small"
 									fullWidth
-									value={formData[`${prefix}BannerWidth`] || 800}
+									placeholder="Default: 1024"
+									value={formData[`${prefix}BannerWidth`] ?? ''}
 									onChange={(e) =>
-										updateState(
-											`${prefix}BannerWidth`,
-											parseInt(e.target.value),
-										)
+										handleNumChange(`${prefix}BannerWidth`, e.target.value)
 									}
-									InputProps={{
-										endAdornment: (
-											<InputAdornment position="end">px</InputAdornment>
-										),
-									}}
+									InputLabelProps={{ shrink: true }}
 								/>
 								<TextField
 									label="Height"
 									type="number"
 									size="small"
 									fullWidth
-									value={formData[`${prefix}BannerHeight`] || 300}
+									placeholder="Default: 450"
+									value={formData[`${prefix}BannerHeight`] ?? ''}
 									onChange={(e) =>
-										updateState(
-											`${prefix}BannerHeight`,
-											parseInt(e.target.value),
-										)
+										handleNumChange(`${prefix}BannerHeight`, e.target.value)
 									}
-									InputProps={{
-										endAdornment: (
-											<InputAdornment position="end">px</InputAdornment>
-										),
-									}}
+									InputLabelProps={{ shrink: true }}
 								/>
 							</div>
+							<TextField
+								label="Overlay Color (Hex/RGBA)"
+								size="small"
+								fullWidth
+								placeholder="Default: None"
+								value={formData[`${prefix}OverlayColor`] ?? ''}
+								onChange={(e) =>
+									updateState(`${prefix}OverlayColor`, e.target.value)
+								}
+								helperText="Warna pelapis transparan (opsional)"
+								InputLabelProps={{ shrink: true }}
+							/>
 						</Grid>
 
-						{/* Avatar Settings */}
+						{/* 2. Avatar Settings */}
 						<Grid item xs={12} md={6}>
-							<Typography
-								variant="subtitle2"
-								className="mb-2 text-primary uppercase text-xs font-bold"
-							>
-								Avatar
-							</Typography>
-							<div className="flex gap-4">
+							<div className="flex justify-between items-center mb-2">
+								<Typography
+									variant="subtitle2"
+									className="text-primary uppercase text-xs font-bold"
+								>
+									Avatar
+								</Typography>
+								<Switch
+									size="small"
+									checked={formData[`${prefix}AvatarEnabled`] ?? true}
+									onChange={(e) =>
+										updateState(`${prefix}AvatarEnabled`, e.target.checked)
+									}
+								/>
+							</div>
+							<div className="flex gap-4 mb-3">
 								<TextField
 									label="Size"
 									type="number"
 									size="small"
 									fullWidth
-									value={formData[`${prefix}AvatarSize`] || 128}
+									placeholder="Default: 256"
+									value={formData[`${prefix}AvatarSize`] ?? ''}
 									onChange={(e) =>
-										updateState(`${prefix}AvatarSize`, parseInt(e.target.value))
+										handleNumChange(`${prefix}AvatarSize`, e.target.value)
 									}
+									InputLabelProps={{ shrink: true }}
 								/>
+								<TextField
+									label="Y Offset"
+									type="number"
+									size="small"
+									fullWidth
+									placeholder="Default: 0"
+									value={formData[`${prefix}AvatarYOffset`] ?? ''}
+									onChange={(e) =>
+										handleNumChange(`${prefix}AvatarYOffset`, e.target.value)
+									}
+									InputLabelProps={{ shrink: true }}
+								/>
+							</div>
+							<div className="flex gap-4">
 								<FormControl fullWidth size="small">
-									<InputLabel>Shape</InputLabel>
+									<InputLabel shrink>Shape</InputLabel>
 									<Select
 										label="Shape"
 										value={formData[`${prefix}AvatarShape`] || 'circle'}
 										onChange={(e) =>
 											updateState(`${prefix}AvatarShape`, e.target.value)
 										}
+										displayEmpty
 									>
 										<MenuItem value="circle">Circle</MenuItem>
 										<MenuItem value="square">Square</MenuItem>
 									</Select>
 								</FormControl>
+								<TextField
+									label="Border Color"
+									type="color"
+									size="small"
+									fullWidth
+									value={formData[`${prefix}AvatarBorderColor`] ?? '#FFFFFF'}
+									onChange={(e) =>
+										updateState(`${prefix}AvatarBorderColor`, e.target.value)
+									}
+									className="p-0"
+									InputLabelProps={{ shrink: true }}
+								/>
 							</div>
 						</Grid>
 
-						{/* Main Text Content */}
+						{/* 3. Main Text */}
 						<Grid item xs={12} md={6}>
 							<Typography
 								variant="subtitle2"
@@ -192,45 +292,66 @@ const WelcomeForm = ({ guildId, initialSettings, channels, roles }: Props) => {
 								size="small"
 								fullWidth
 								className="mb-3"
-								value={formData[`${prefix}MainTextContent`] || ''}
+								placeholder={type === 'In' ? 'WELCOME' : 'GOODBYE'}
+								value={formData[`${prefix}MainTextContent`] ?? ''}
 								onChange={(e) =>
 									updateState(`${prefix}MainTextContent`, e.target.value)
 								}
-								placeholder={
-									type === 'In'
-										? 'WELCOME, {username}!'
-										: 'Goodbye, {username}!'
-								}
+								InputLabelProps={{ shrink: true }}
 							/>
+							<div className="flex gap-4 mb-3">
+								<TextField
+									label="Font Family"
+									size="small"
+									fullWidth
+									placeholder="Default: Inter"
+									value={formData[`${prefix}MainTextFontFamily`] ?? ''}
+									onChange={(e) =>
+										updateState(`${prefix}MainTextFontFamily`, e.target.value)
+									}
+									InputLabelProps={{ shrink: true }}
+								/>
+								<TextField
+									label="Weight"
+									size="small"
+									fullWidth
+									placeholder="Default: 800"
+									value={formData[`${prefix}MainTextFontWeight`] ?? ''}
+									onChange={(e) =>
+										updateState(`${prefix}MainTextFontWeight`, e.target.value)
+									}
+									InputLabelProps={{ shrink: true }}
+								/>
+							</div>
 							<div className="flex gap-4">
 								<TextField
 									label="Y Offset"
 									type="number"
 									size="small"
 									fullWidth
-									value={formData[`${prefix}MainTextYOffset`] || -80}
+									placeholder="Default: 0"
+									value={formData[`${prefix}MainTextYOffset`] ?? ''}
 									onChange={(e) =>
-										updateState(
-											`${prefix}MainTextYOffset`,
-											parseInt(e.target.value),
-										)
+										handleNumChange(`${prefix}MainTextYOffset`, e.target.value)
 									}
+									InputLabelProps={{ shrink: true }}
 								/>
 								<TextField
 									label="Color"
 									type="color"
 									size="small"
 									fullWidth
-									value={formData[`${prefix}MainTextColor`] || '#FFFFFF'}
+									value={formData[`${prefix}MainTextColor`] ?? '#FFFFFF'}
 									onChange={(e) =>
 										updateState(`${prefix}MainTextColor`, e.target.value)
 									}
 									className="p-0"
+									InputLabelProps={{ shrink: true }}
 								/>
 							</div>
 						</Grid>
 
-						{/* Sub Text Content */}
+						{/* 4. Sub Text */}
 						<Grid item xs={12} md={6}>
 							<Typography
 								variant="subtitle2"
@@ -243,10 +364,12 @@ const WelcomeForm = ({ guildId, initialSettings, channels, roles }: Props) => {
 								size="small"
 								fullWidth
 								className="mb-3"
-								value={formData[`${prefix}SubTextContent`] || ''}
+								placeholder="Default: {username}"
+								value={formData[`${prefix}SubTextContent`] ?? ''}
 								onChange={(e) =>
 									updateState(`${prefix}SubTextContent`, e.target.value)
 								}
+								InputLabelProps={{ shrink: true }}
 							/>
 							<div className="flex gap-4">
 								<TextField
@@ -254,69 +377,54 @@ const WelcomeForm = ({ guildId, initialSettings, channels, roles }: Props) => {
 									type="number"
 									size="small"
 									fullWidth
-									value={formData[`${prefix}SubTextYOffset`] || 100}
+									placeholder="Default: 0"
+									value={formData[`${prefix}SubTextYOffset`] ?? ''}
 									onChange={(e) =>
-										updateState(
-											`${prefix}SubTextYOffset`,
-											parseInt(e.target.value),
-										)
+										handleNumChange(`${prefix}SubTextYOffset`, e.target.value)
 									}
+									InputLabelProps={{ shrink: true }}
 								/>
 								<TextField
 									label="Color"
 									type="color"
 									size="small"
 									fullWidth
-									value={formData[`${prefix}SubTextColor`] || '#FFFFFF'}
+									value={formData[`${prefix}SubTextColor`] ?? '#FFFFFF'}
 									onChange={(e) =>
 										updateState(`${prefix}SubTextColor`, e.target.value)
 									}
 									className="p-0"
+									InputLabelProps={{ shrink: true }}
 								/>
 							</div>
 						</Grid>
 
-						{/* Borders & Shadows (Simplified for UI) */}
+						{/* 5. Canvas Global Border */}
 						<Grid item xs={12}>
-							<Typography
-								variant="subtitle2"
-								className="mb-2 text-primary uppercase text-xs font-bold"
-							>
-								Effects
-							</Typography>
 							<div className="flex gap-4">
 								<TextField
-									label="Border Color"
-									type="color"
-									size="small"
-									fullWidth
-									value={formData[`${prefix}BorderColor`] || '#FFFFFF'}
-									onChange={(e) =>
-										updateState(`${prefix}BorderColor`, e.target.value)
-									}
-								/>
-								<TextField
-									label="Border Width"
+									label="Canvas Border Width"
 									type="number"
 									size="small"
 									fullWidth
-									value={formData[`${prefix}BorderWidth`] || 4}
+									placeholder="Default: 0"
+									value={formData[`${prefix}BorderWidth`] ?? ''}
 									onChange={(e) =>
-										updateState(
-											`${prefix}BorderWidth`,
-											parseInt(e.target.value),
-										)
+										handleNumChange(`${prefix}BorderWidth`, e.target.value)
 									}
+									InputLabelProps={{ shrink: true }}
 								/>
 								<TextField
-									label="Shadow Color"
+									label="Canvas Border Color"
 									type="color"
 									size="small"
 									fullWidth
-									value={formData[`${prefix}ShadowColor`] || 'rgba(0,0,0,0.5)'}
+									value={formData[`${prefix}BorderColor`] ?? '#FFFFFF'}
 									onChange={(e) =>
-										updateState(`${prefix}ShadowColor`, e.target.value)
+										updateState(`${prefix}BorderColor`, e.target.value)
 									}
+									className="p-0"
+									InputLabelProps={{ shrink: true }}
 								/>
 							</div>
 						</Grid>
@@ -452,58 +560,104 @@ const WelcomeForm = ({ guildId, initialSettings, channels, roles }: Props) => {
 				</div>
 			</Grid>
 
-			{/* --- COL 2: MESSAGE CONTENT --- */}
+			{/* --- COL 2: EMBED & BACKGROUND --- */}
 			<Grid item xs={12} lg={6}>
 				<div className="flex flex-col gap-6">
 					{/* Welcome In */}
 					<Card>
-						<CardHeader title="👋 Welcome In Content" />
+						<CardHeader
+							title="👋 Welcome In Message"
+							action={
+								<Switch
+									checked={formData.welcomeInOn}
+									onChange={(e) => updateState('welcomeInOn', e.target.checked)}
+								/>
+							}
+						/>
 						<CardContent className="flex flex-col gap-4">
 							<TextField
-								label="Message Text"
+								label="Embed Message Text"
 								multiline
-								rows={3}
+								rows={2}
 								fullWidth
-								placeholder="Welcome {username}! You are the #{members} member."
-								value={formData.welcomeInText || ''}
-								onChange={(e) => updateState('welcomeInText', e.target.value)}
-							/>
-							<TextField
-								label="Background Image URL"
-								fullWidth
-								size="small"
-								placeholder="https://example.com/bg.jpg"
-								value={formData.welcomeInBackgroundUrl || ''}
+								placeholder="Welcome {mention} to the server!"
+								value={formData.welcomeInEmbedText || ''}
 								onChange={(e) =>
-									updateState('welcomeInBackgroundUrl', e.target.value)
+									updateState('welcomeInEmbedText', e.target.value)
 								}
 							/>
+							<div className="flex gap-4">
+								<TextField
+									label="Embed Side Color"
+									type="color"
+									size="small"
+									fullWidth
+									value={formData.welcomeInEmbedColor || '#000000'}
+									onChange={(e) =>
+										updateState('welcomeInEmbedColor', e.target.value)
+									}
+									className="p-0"
+								/>
+								<TextField
+									label="Background Image URL"
+									fullWidth
+									size="small"
+									value={formData.welcomeInBackgroundUrl || ''}
+									onChange={(e) =>
+										updateState('welcomeInBackgroundUrl', e.target.value)
+									}
+								/>
+							</div>
 						</CardContent>
 					</Card>
 
 					{/* Welcome Out */}
 					<Card>
-						<CardHeader title="🚪 Goodbye Content" />
+						<CardHeader
+							title="🚪 Goodbye Message"
+							action={
+								<Switch
+									checked={formData.welcomeOutOn}
+									onChange={(e) =>
+										updateState('welcomeOutOn', e.target.checked)
+									}
+								/>
+							}
+						/>
 						<CardContent className="flex flex-col gap-4">
 							<TextField
-								label="Message Text"
+								label="Embed Message Text"
 								multiline
-								rows={3}
+								rows={2}
 								fullWidth
-								placeholder="Goodbye {username}! We'll miss you."
-								value={formData.welcomeOutText || ''}
-								onChange={(e) => updateState('welcomeOutText', e.target.value)}
-							/>
-							<TextField
-								label="Background Image URL"
-								fullWidth
-								size="small"
-								placeholder="https://example.com/bg.jpg"
-								value={formData.welcomeOutBackgroundUrl || ''}
+								placeholder="Goodbye {username}..."
+								value={formData.welcomeOutEmbedText || ''}
 								onChange={(e) =>
-									updateState('welcomeOutBackgroundUrl', e.target.value)
+									updateState('welcomeOutEmbedText', e.target.value)
 								}
 							/>
+							<div className="flex gap-4">
+								<TextField
+									label="Embed Side Color"
+									type="color"
+									size="small"
+									fullWidth
+									value={formData.welcomeOutEmbedColor || '#000000'}
+									onChange={(e) =>
+										updateState('welcomeOutEmbedColor', e.target.value)
+									}
+									className="p-0"
+								/>
+								<TextField
+									label="Background Image URL"
+									fullWidth
+									size="small"
+									value={formData.welcomeOutBackgroundUrl || ''}
+									onChange={(e) =>
+										updateState('welcomeOutBackgroundUrl', e.target.value)
+									}
+								/>
+							</div>
 						</CardContent>
 					</Card>
 				</div>
@@ -558,32 +712,189 @@ const WelcomeForm = ({ guildId, initialSettings, channels, roles }: Props) => {
 				</DialogTitle>
 				<DialogContent dividers>
 					<div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+						{/* Member Info */}
+						<div className="col-span-full">
+							<Typography
+								variant="subtitle2"
+								className="text-primary font-bold uppercase text-xs mt-2 mb-1"
+							>
+								Member Info
+							</Typography>
+						</div>
 						{[
-							{ code: '{userId}', desc: "Member's ID" },
+							{ code: '{userId}', desc: "Member's Discord ID" },
 							{ code: '{username}', desc: "Member's Username" },
-							{ code: '{mention}', desc: 'Tag Member (@User)' },
-							{ code: '{guildName}', desc: 'Server Name' },
-							{ code: '{members}', desc: 'Total Member Count' },
-							{ code: '{memberJoin}', desc: 'Join Date' },
-							{ code: '{createdAt}', desc: 'Server Created Date' },
-							{ code: '{ownerName}', desc: 'Server Owner' },
+							{ code: '{tag}', desc: "Member's Full Tag (Name#0000)" },
+							{ code: '{userTag}', desc: "Member's Tag ID" },
+							{ code: '{mention}', desc: 'Mention Member (@User)' },
+							{ code: '{memberJoin}', desc: 'Member Join Date' },
 						].map((p, i) => (
 							<div
-								key={i}
+								key={`member-${i}`}
 								className="flex flex-col border-b border-divider pb-2"
 							>
-								<code className="text-primary font-bold">{p.code}</code>
-								<span className="text-textSecondary">{p.desc}</span>
+								<code className="text-primary font-boldtext p-2">{p.code}</code>
+								<span className="text-textSecondary text-xs">{p.desc}</span>
 							</div>
 						))}
-						{/* Tambahin sisa placeholder dari list kamu */}
+
+						{/* Separator */}
+						<div className="col-span-full">
+							<Typography
+								variant="subtitle2"
+								className="text-primary font-bold uppercase text-xs mt-2 mb-1"
+							>
+								Server Info
+							</Typography>
+						</div>
+
+						{[
+							{ code: '{guildName}', desc: 'Server Name' },
+							{ code: '{guildId}', desc: 'Server ID' },
+							{ code: '{ownerName}', desc: 'Server Owner Tag' },
+							{ code: '{ownerId}', desc: 'Server Owner ID' },
+							{ code: '{region}', desc: 'Server Region/Locale' },
+							{ code: '{createdAt}', desc: 'Server Created Date' },
+							{ code: '{verified}', desc: 'Verified Status' },
+							{ code: '{partnered}', desc: 'Partnered Status' },
+						].map((p, i) => (
+							<div
+								key={`server-${i}`}
+								className="flex flex-col border-b border-divider pb-2"
+							>
+								<code className="text-primary font-bold p-2">{p.code}</code>
+								<span className="text-textSecondary text-xs">{p.desc}</span>
+							</div>
+						))}
+
+						{/* Counts */}
+						<div className="col-span-full">
+							<Typography
+								variant="subtitle2"
+								className="text-primary font-bold uppercase text-xs mt-2 mb-1"
+							>
+								Member Counts
+							</Typography>
+						</div>
+
+						{[
+							{ code: '{members}', desc: 'Total Member Count' },
+							{ code: '{membersTotal}', desc: 'Total Cached Members' },
+							{ code: '{humans}', desc: 'Human Members' },
+							{ code: '{bots}', desc: 'Bot Members' },
+							{ code: '{online}', desc: 'Online Members' },
+							{ code: '{idle}', desc: 'Idle Members' },
+							{ code: '{dnd}', desc: 'Do Not Disturb Members' },
+							{ code: '{offline}', desc: 'Offline Members' },
+							{ code: '{onlineHumans}', desc: 'Online Humans' },
+							{ code: '{onlineBots}', desc: 'Online Bots' },
+						].map((p, i) => (
+							<div
+								key={`count-${i}`}
+								className="flex flex-col border-b border-divider pb-2"
+							>
+								<code className="text-primary font-bold p-2">{p.code}</code>
+								<span className="text-textSecondary text-xs">{p.desc}</span>
+							</div>
+						))}
+
+						{/* Server Stats */}
+						<div className="col-span-full">
+							<Typography
+								variant="subtitle2"
+								className="text-primary font-bold uppercase text-xs mt-2 mb-1"
+							>
+								Server Stats
+							</Typography>
+						</div>
+
+						{[
+							{ code: '{boosts}', desc: 'Server Boost Count' },
+							{ code: '{boostLevel}', desc: 'Server Boost Level' },
+							{ code: '{roles}', desc: 'Total Roles' },
+							{ code: '{emojis}', desc: 'Total Emojis' },
+							{ code: '{stickers}', desc: 'Total Stickers' },
+						].map((p, i) => (
+							<div
+								key={`stats-${i}`}
+								className="flex flex-col border-b border-divider pb-2"
+							>
+								<code className="text-primary font-bold p-2">{p.code}</code>
+								<span className="text-textSecondary text-xs">{p.desc}</span>
+							</div>
+						))}
+
+						{/* Channels */}
+						<div className="col-span-full">
+							<Typography
+								variant="subtitle2"
+								className="text-primary font-bold uppercase text-xs mt-2 mb-1"
+							>
+								Channels
+							</Typography>
+						</div>
+
+						{[
+							{ code: '{channels}', desc: 'Total Channels' },
+							{ code: '{textChannels}', desc: 'Text Channels' },
+							{ code: '{voiceChannels}', desc: 'Voice Channels' },
+							{ code: '{categories}', desc: 'Categories' },
+							{ code: '{announcementChannels}', desc: 'Announcement Channels' },
+							{ code: '{stageChannels}', desc: 'Stage Channels' },
+						].map((p, i) => (
+							<div
+								key={`channel-${i}`}
+								className="flex flex-col border-b border-divider pb-2"
+							>
+								<code className="text-primary font-bold p-2">{p.code}</code>
+								<span className="text-textSecondary text-xs">{p.desc}</span>
+							</div>
+						))}
 					</div>
 					<Alert severity="info" className="mt-4">
-						You can use these placeholders in both Welcome and Goodbye messages!
+						💡 Use these placeholders in <strong>Embed Text</strong>,{' '}
+						<strong>Main Text</strong>, and <strong>Sub Text</strong> fields.
+						They will be replaced with real data when a member joins or leaves!
 					</Alert>
 				</DialogContent>
 				<DialogActions>
 					<Button onClick={() => setModalOpen(false)}>Close</Button>
+				</DialogActions>
+			</Dialog>
+
+			{/* --- PREVIEW RESULT MODAL --- */}
+			<Dialog
+				open={previewModalOpen}
+				onClose={() => setPreviewModalOpen(false)}
+				maxWidth="lg"
+				fullWidth
+			>
+				<DialogTitle className="flex items-center gap-2">
+					<i className="tabler-photo" /> Canvas Preview
+				</DialogTitle>
+				<DialogContent className="flex justify-center items-center bg-black/5 p-4 overflow-hidden min-h-[300px]">
+					{previewImage ? (
+						<img
+							src={previewImage}
+							alt="Canvas Preview"
+							className="max-w-full h-auto rounded-lg shadow-lg object-contain"
+							style={{ maxHeight: '70vh' }}
+						/>
+					) : (
+						<div className="flex flex-col items-center gap-2 text-textSecondary opacity-50">
+							<CircularProgress size={40} />
+							<Typography variant="body2">Loading image...</Typography>
+						</div>
+					)}
+				</DialogContent>
+				<DialogActions>
+					<Button
+						onClick={() => setPreviewModalOpen(false)}
+						variant="outlined"
+						color="secondary"
+					>
+						Close Preview
+					</Button>
 				</DialogActions>
 			</Dialog>
 

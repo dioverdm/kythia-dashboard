@@ -1,34 +1,42 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# Kythia Dashboard
 
-## Getting Started
+![Kythia Dashboard Banner](https://via.placeholder.com/1200x300?text=Kythia+Dashboard)
 
-First, run the development server:
+**Kythia Dashboard** is a comprehensive web interface for managing Discord servers with the Kythia Bot.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-```
+---
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 🛑 STOP! READ THIS FIRST
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### 🐣 Are you a Beginner?
+**[CLICK HERE FOR THE BEGINNER SETUP GUIDE](docs/SETUP.md)**
+*(Read this if you don't know what Node.js, Git, or .env files are)*
 
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
+### 🆘 Having Errors?
+**[CHECK THE TROUBLESHOOTING GUIDE](docs/TROUBLESHOOTING.md)**
 
-## Learn More
+---
 
-To learn more about Next.js, take a look at the following resources:
+## 📖 Documentation for Developers
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+*   **[Architecture](docs/ARCHITECTURE.md)**: Logic, Folder Structure, and Tech Stack.
+*   **[Database Schema](docs/DATABASE.md)**: Prisma models and relationships.
+*   **[Deployment](docs/SETUP.md)**: Production build instructions.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
+## 🚀 Quick Start (For Experienced Devs)
 
-## Deploy on Vercel
+1.  `cp example.env .env`
+2.  `npm install`
+3.  `npm run migrate`
+4.  `npm run dev`
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## ✨ Features
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+*   **Discord Login**: Secure authentication using Discord OAuth2.
+*   **Server Management**: Real-time statistics and configuration.
+*   **Bot Sync**: Instant updates to your Kythia Bot instance.
+*   **Type Safe**: 100% TypeScript.
+
+## 📜 License
+
+This project is licensed under **CC BY-NC 4.0**.

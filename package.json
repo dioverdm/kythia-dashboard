@@ -17,7 +17,8 @@
 		"build:icons": "tsx src/assets/iconify-icons/bundle-icons-css.ts",
 		"migrate": "dotenv -e .env -- npx prisma migrate dev",
 		"postinstall": "prisma generate && npm run build:icons",
-		"removeI18n": "tsx src/remove-translation-scripts/index.ts"
+		"removeI18n": "tsx src/remove-translation-scripts/index.ts",
+		"setup": "bash scripts/setup.sh"
 	},
 	"dependencies": {
 		"@emotion/cache": "11.14.0",
