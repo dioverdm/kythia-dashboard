@@ -40,7 +40,7 @@ const Footer = ({ mode }: { mode: Mode }) => {
 									<Logo />
 								</Link>
 								<Typography className="md:max-is-[390px] opacity-[0.78]">
-									Kythia is your cutest Discord companion. Packed with AI,
+									Pogo is your cutest Discord companion. Packed with AI,
 									moderation, music, and economy features to liven up your
 									community.
 								</Typography>
@@ -140,7 +140,7 @@ const Footer = ({ mode }: { mode: Mode }) => {
 						userSelect: 'none',
 					}}
 				>
-					KYTHIA
+					POGO
 				</Typography>
 			</div>
 		</footer>
