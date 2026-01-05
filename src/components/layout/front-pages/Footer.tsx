@@ -40,9 +40,7 @@ const Footer = ({ mode }: { mode: Mode }) => {
 									<Logo />
 								</Link>
 								<Typography className="md:max-is-[390px] opacity-[0.78]">
-									Pogo is your cutest Discord companion. Packed with AI,
-									moderation, music, and economy features to liven up your
-									community.
+									Pogo es tu compañero de Discord más adorable. Equipado con IA, moderación, música y funciones de economía para animar tu comunidad.
 								</Typography>
 
 								<Button
@@ -68,35 +66,35 @@ const Footer = ({ mode }: { mode: Mode }) => {
 									href="/"
 									className="opacity-[0.78] hover:text-primary transition-all"
 								>
-									Home
+									Inicio
 								</Typography>
 								<Typography
 									component={Link}
 									href="/commands"
 									className="opacity-[0.78] hover:text-primary transition-all"
 								>
-									Commands
+									Comandos
 								</Typography>
 								<Typography
 									component={Link}
 									href="/changelog"
 									className="opacity-[0.78] hover:text-primary transition-all"
 								>
-									Changelog
+									Registro de cambios
 								</Typography>
 								<Typography
 									component={Link}
 									href="/about"
 									className="opacity-[0.78] hover:text-primary transition-all"
 								>
-									About Owner
+									Desarrolladores
 								</Typography>
 								<Typography
 									component={Link}
 									href="/status"
 									className="opacity-[0.78] hover:text-primary transition-all"
 								>
-									Status
+									Estado
 								</Typography>
 							</div>
 						</Grid>
@@ -112,14 +110,14 @@ const Footer = ({ mode }: { mode: Mode }) => {
 									href="/tos"
 									className="opacity-[0.78] hover:text-primary transition-all"
 								>
-									Terms of Service
+									Condiciones de servicio
 								</Typography>
 								<Typography
 									component={Link}
 									href="/privacy"
 									className="opacity-[0.78] hover:text-primary transition-all"
 								>
-									Privacy Policy
+									Política de privacidad
 								</Typography>
 							</div>
 						</Grid>
