@@ -9,7 +9,7 @@ const verticalMenuData = (
 
 	const menu: VerticalMenuDataType[] = [
 		{
-			label: 'Home',
+			label: 'Inicio',
 			href: `/dash`,
 			icon: 'tabler-home',
 		},
@@ -18,7 +18,7 @@ const verticalMenuData = (
 	// 🔒 HANYA MUNCUL KALAU OWNER
 	if (isOwner) {
 		menu.push({
-			label: 'License Manager',
+			label: 'Administrador de licencias',
 			href: `/dash/admin/license`,
 			icon: 'tabler-key',
 		});

@@ -115,7 +115,7 @@ const Header = ({ mode }: { mode: Mode }) => {
 								startIcon={<i className="tabler-login text-xl" />}
 								className="whitespace-nowrap"
 							>
-								Login
+								Acceder
 							</Button>
 						)}
 					</div>

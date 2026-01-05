@@ -60,11 +60,11 @@ export type Config = {
 };
 
 const themeConfig: Config = {
-	templateName: 'Kythia',
+	templateName: 'Pogo OS',
 	homePageUrl: '/',
 	settingsCookieName: 'kythia-dashboard',
 	mode: 'system', // 'system', 'light', 'dark'
-	skin: 'default', // 'default', 'bordered'
+	skin: 'bordered', // 'default', 'bordered'
 	semiDark: false, // true, false
 	layout: 'vertical', // 'vertical', 'collapsed'
 	layoutPadding: 24, // Common padding for header, content, footer layout components (in px)
